@@ -1,0 +1,87 @@
+sudo yum install amazon-cloudwatch-agent
+  curl https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
+  curl https://s3.amazonaws.com/amazoncloudwatch-agent/linux/amd64/latest/AmazonCloudWatchAgent.zip -O
+  unzip AmazonCloudWatchAgent.zip
+ sudo ./install.sh
+ sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a start
+
+
+
+
+To Set result from log file to log group 
+
+Give IAM Role for 
+https://medium.com/tensult/to-send-linux-logs-to-aws-cloudwatch-17b3ea5f4863
+
+
+Grant Permissions: Once you have identified the IAM role, you need to grant the necessary permissions for CloudWatch Logs. You can either attach the appropriate IAM policy directly to the IAM role or create a new IAM policy and attach it.
+
+a. Attach Existing Policy: If there is an existing IAM policy that provides the required permissions, you can attach it to the IAM role associated with the EC2 instance. Ensure that the policy allows the following actions for the log group and log stream:
+
+logs:CreateLogGroup
+logs:CreateLogStream
+logs:PutLogEvents
+b. Create Custom Policy: If you don't have an existing policy or need to create a custom policy, you can follow these steps:
+
+Go to the IAM service in the AWS Management Console.
+
+Select "Policies" from the sidebar and click on "Create policy".
+
+Choose the JSON tab and enter the policy document. Here's an example policy document that provides the necessary permissions for a specific log group and log stream:
+
+json
+Copy code
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": [
+                "*"
+            ]
+        }
+    ]
+}
+
+
+
+
+To configure the CloudWatch agent logs, amazon-cloudwatch-agent.log and configuration-validation.log, you need to modify the agent's configuration file. 
+The configuration file is typically named amazon-cloudwatch-agent.json and is located in the agent's installation directory.
+
+
+cd /opt/aws/amazon-cloudwatch-agent/      and in json file write these cmd
+{
+    "logs": {
+        "logs_collected": {
+            "files": {
+                "collect_list": [
+                    {
+                        "file_path": "/var/log/amazon/amazon-cloudwatch-agent/amazon-cloudwatch-agent.log",
+                        "log_group_name": "TechAWSDevM5LogGroup",
+                        "log_stream_name": "Techawsdevm5LogStream",
+                        "timezone": "UST"
+                    },
+                    {
+                        "file_path": "/var/log/amazon/amazon-cloudwatch-agent/configuration-validation.log",
+                        "log_group_name": "TechAWSDevM5LogGroup",
+                        "log_stream_name": "Techawsdevm5LogStream",
+                        "timezone": "UST"
+                    }
+                ]
+            }
+        }
+    }
+}
+
+
+Make sure to include this corrected JSON configuration in your amazon-cloudwatch-agent.json
+Check the paths
+
+
+sudo systemctl restart amazon-cloudwatch-agent
